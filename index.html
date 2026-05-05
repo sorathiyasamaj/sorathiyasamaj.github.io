@@ -268,8 +268,50 @@
         line-height: 1.2;
       }
 
+      .hero-card {
+        min-height: auto;
+        padding-top: 2.6rem;
+        padding-bottom: 2.25rem;
+      }
+
+      .hero-title {
+        max-width: 100%;
+        font-size: clamp(2.25rem, 13vw, 3.35rem);
+        line-height: .9;
+      }
+
+      .hero-subtitle {
+        margin-top: 1rem;
+        font-size: clamp(.98rem, 4.2vw, 1.28rem);
+        line-height: 1.25;
+      }
+
+      .hero-kicker {
+        font-size: .58rem;
+        letter-spacing: .18em;
+      }
+
+      .hero-card #countdown {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: .5rem;
+        margin-top: 1rem;
+      }
+
+      .hero-card #countdown > div {
+        padding: .65rem .5rem;
+      }
+
+      .hero-card .ganesh-wrap {
+        width: 12.5rem;
+        height: 12.5rem;
+        margin-top: 1rem;
+      }
+
+      .hero-card .ganesh-medallion {
+        max-height: 10rem;
+      }
+
       .royal-border::before { inset: 6px; }
-      .hero-card { min-height: 680px; }
       .foil-rail.left { left: 1.1rem; }
       .foil-rail.right { right: 1.1rem; }
     }
@@ -411,10 +453,10 @@
         <div class="absolute -left-12 top-12 h-36 w-36 rounded-full border border-[#e8aa2e]/40"></div>
         <div class="absolute -right-16 bottom-16 h-48 w-48 rounded-full border border-[#e8aa2e]/40"></div>
         <p class="hero-kicker relative text-xs font-black uppercase tracking-[.38em] text-[#ffe49a]">Vikram Samvat 2082, Vaishakh vad 8 | 10.May.2026</p>
-        <h1 class="hero-title relative mx-auto mt-6 max-w-4xl font-display">૩૪મો સમૂહલગ્નોત્સવ</h1>
+        <h1 class="hero-title relative mx-auto mt-6 max-w-4xl font-display"><span class="block sm:inline">૩૪મો</span><span class="block sm:inline">સમૂહલગ્નોત્સવ</span></h1>
         <h2 class="hero-subtitle relative mx-auto mt-12 max-w-3xl font-guj leading-tight">શ્રી નાગોર-ત્રંબૌ યદુવંશી સોરઠીયા આહિર સમાજ</h2>
         <div id="countdown" class="relative mt-8 grid grid-cols-4 gap-2 text-center"></div>
-        <div class="relative mx-auto mt-8 grid h-72 w-72 max-w-full place-items-center rounded-full border border-[#f6cc62]/80 bg-[#fff4d5] p-3 shadow-2xl shadow-black/30">
+        <div class="ganesh-wrap relative mx-auto mt-8 grid h-72 w-72 max-w-full place-items-center rounded-full border border-[#f6cc62]/80 bg-[#fff4d5] p-3 shadow-2xl shadow-black/30">
           <div class="absolute inset-3 rounded-full border border-[#9f1d20]/25"></div>
           <img class="ganesh-medallion float-soft relative max-h-64 rounded-full object-contain" src="assets/optimized/ganesh-wedding-640.webp" alt="ganpati" width="640" height="640" fetchpriority="high" decoding="async">
         </div>
@@ -523,7 +565,12 @@
     </div>
   </footer>
 
-  <audio id="music" loop preload="none">
+  <button id="musicToggle" class="fixed bottom-4 right-4 z-50 inline-flex items-center gap-2 rounded-full border border-[#e8aa2e]/60 bg-[#fff7e6]/95 px-4 py-3 text-sm font-black text-[#4a1116] shadow-xl shadow-[#4a1116]/20 backdrop-blur transition hover:-translate-y-0.5" type="button" aria-pressed="false">
+    <span id="musicIcon" aria-hidden="true">▶</span>
+    <span id="musicLabel">Music Off</span>
+  </button>
+
+  <audio id="music" loop preload="auto" playsinline>
     <source src="assets/YTDown_YouTube_Aaj-Se-Teri-Akshay-Kumar-_-Radhika-Apte-_Media_EQaaFuF6_6s_009_128k.mp3" type="audio/mpeg">
   </audio>
 
@@ -636,13 +683,45 @@
 
     function setupMusic() {
       const music = document.getElementById("music");
-      const startMusic = () => {
-        music.play().catch(() => {});
-        document.removeEventListener("click", startMusic);
-        document.removeEventListener("touchstart", startMusic);
+      const musicToggle = document.getElementById("musicToggle");
+      const musicIcon = document.getElementById("musicIcon");
+      const musicLabel = document.getElementById("musicLabel");
+
+      music.load();
+
+      const syncButton = (isPlaying) => {
+        musicToggle.setAttribute("aria-pressed", String(isPlaying));
+        musicIcon.textContent = isPlaying ? "❚❚" : "▶";
+        musicLabel.textContent = isPlaying ? "Music On" : "Music Off";
       };
-      document.addEventListener("click", startMusic, { passive: true });
-      document.addEventListener("touchstart", startMusic, { passive: true });
+
+      const startMusic = async () => {
+        try {
+          await music.play();
+          syncButton(true);
+        } catch {}
+      };
+
+      musicToggle.addEventListener("click", async () => {
+        if (music.paused) {
+          await startMusic();
+        } else {
+          music.pause();
+          syncButton(false);
+        }
+      });
+
+      document.addEventListener("click", (event) => {
+        if (event.target.closest("#musicToggle")) return;
+        if (!music.paused) return;
+        startMusic();
+      }, { passive: true });
+
+      document.addEventListener("touchstart", (event) => {
+        if (event.target.closest("#musicToggle")) return;
+        if (!music.paused) return;
+        startMusic();
+      }, { passive: true });
     }
 
     function loadFonts() {
