@@ -565,6 +565,22 @@
     </div>
   </footer>
 
+  <div id="musicModal" class="fixed inset-0 z-[100] flex items-center justify-center bg-[#25100d]/80 backdrop-blur-md transition-opacity duration-300">
+    <div class="m-4 max-w-sm rounded-[2.5rem] bg-[#fff8e8] p-8 text-center shadow-2xl border border-[#e8aa2e]/20">
+      <div class="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-[#4a1116] text-[#e8aa2e]">
+        <svg class="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
+        </svg>
+      </div>
+      <h2 class="mb-2 text-2xl font-black text-[#4a1116]">Play Background Music?</h2>
+      <p class="mb-8 text-sm font-medium text-[#6d3a20]">Enhance your experience with traditional background theme.</p>
+      <div class="flex flex-col gap-3">
+        <button id="allowMusic" class="rounded-full bg-[#4a1116] py-4 text-sm font-black text-[#fff7e6] shadow-lg active:scale-95 transition-all hover:bg-[#631a20]">Yes, Play Music</button>
+        <button id="declineMusic" class="rounded-full border border-[#4a1116]/20 py-4 text-sm font-black text-[#4a1116] transition-all hover:bg-[#4a1116]/5">No, Thank You</button>
+      </div>
+    </div>
+  </div>
+
   <button id="musicToggle" class="fixed bottom-4 right-4 z-50 inline-flex items-center gap-2 rounded-full border border-[#e8aa2e]/60 bg-[#fff7e6]/95 px-4 py-3 text-sm font-black text-[#4a1116] shadow-xl shadow-[#4a1116]/20 backdrop-blur transition hover:-translate-y-0.5" type="button" aria-pressed="false">
     <span id="musicIcon" aria-hidden="true">▶</span>
     <span id="musicLabel">Music Off</span>
@@ -686,6 +702,9 @@
       const musicToggle = document.getElementById("musicToggle");
       const musicIcon = document.getElementById("musicIcon");
       const musicLabel = document.getElementById("musicLabel");
+      const musicModal = document.getElementById("musicModal");
+      const allowBtn = document.getElementById("allowMusic");
+      const declineBtn = document.getElementById("declineMusic");
 
       music.load();
 
@@ -699,14 +718,25 @@
         try {
           const playPromise = music.play();
           if (playPromise !== undefined) {
-            playPromise.then(() => syncButton(true)).catch(() => {
-              // Autoplay failed, try on user interaction
+            playPromise.then(() => syncButton(true)).catch((err) => {
+              console.log("Play failed:", err);
             });
           }
         } catch (e) {
           console.log("Music play error:", e);
         }
       };
+
+      const closeByConsent = (play) => {
+        musicModal.style.opacity = "0";
+        setTimeout(() => {
+          musicModal.style.display = "none";
+          if (play) startMusic();
+        }, 300);
+      };
+
+      allowBtn.onclick = () => closeByConsent(true);
+      declineBtn.onclick = () => closeByConsent(false);
 
       musicToggle.addEventListener("click", async () => {
         if (music.paused) {
@@ -716,18 +746,6 @@
           syncButton(false);
         }
       });
-
-      const playOnInteraction = (event) => {
-        if (event.target.closest("#musicToggle")) return;
-        if (!music.paused) return;
-        startMusic();
-      };
-
-      document.addEventListener("click", playOnInteraction, { passive: true });
-      document.addEventListener("touchstart", playOnInteraction, { passive: true });
-
-      // Try to autoplay on page load
-      setTimeout(() => startMusic(), 500);
     }
 
     function loadFonts() {
