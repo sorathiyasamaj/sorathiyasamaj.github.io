@@ -509,7 +509,7 @@
       <div class="text-center">
         <img class="lazy-media mx-auto h-10" data-src="assets/site/headline_hearth.svg" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='134' height='40'%3E%3C/svg%3E" alt="" width="134" height="40" loading="lazy" decoding="async">
         <h2 class="section-title mt-3 text-5xl text-[#4a1116]">Couples</h2>
-        <p class="mx-auto mt-3 max-w-xl text-sm font-semibold text-[#6d3a20]">Five wedding stories, one sacred celebration.</p>
+        <p class="mx-auto mt-3 max-w-xl text-sm font-semibold text-[#6d3a20]">4 wedding stories, one sacred celebration.</p>
       </div>
       <div id="couples" class="mx-auto mt-8 grid max-w-5xl gap-6 sm:grid-cols-2"></div>
     </section>
@@ -529,9 +529,9 @@
               <h3 class="font-guj text-3xl font-extrabold text-[#e8aa2e]">સ્થળ: નાગોર</h3>
               <p class="mt-2 text-sm text-[#ffe8a7]">Route and direction tools for our valued guests.</p>
             </div>
-            <div class="flex gap-3">
-              <button id="copyRoute" class="rounded-full bg-[#e8aa2e] px-6 py-3 text-sm font-black text-[#25100d] shadow-lg active:scale-95 transition-all">Copy Route</button>
-              <a class="rounded-full border border-[#e8aa2e] px-6 py-3 text-center text-sm font-black text-[#ffe8a7] hover:bg-[#e8aa2e] hover:text-[#25100d] transition-all" href="https://maps.app.goo.gl/XHRcQK6mnzVaWfmh7" target="_blank" rel="noreferrer">Get Direction</a>
+            <div class="flex flex-col sm:flex-row gap-3">
+              <button id="copyRoute" class="w-full sm:w-auto rounded-full bg-[#e8aa2e] px-6 py-3 text-sm font-black text-[#25100d] shadow-lg active:scale-95 transition-all">Copy Route</button>
+              <a class="w-full sm:w-auto rounded-full border border-[#e8aa2e] px-6 py-3 text-center text-sm font-black text-[#ffe8a7] hover:bg-[#e8aa2e] hover:text-[#25100d] transition-all" href="https://maps.app.goo.gl/XHRcQK6mnzVaWfmh7" target="_blank" rel="noreferrer">Get Direction</a>
             </div>
           </div>
         </div>
@@ -560,7 +560,7 @@
           <span class="hidden h-3 w-px bg-[#e8aa2e]/30 sm:block"></span>
           <a class="transition hover:text-[#e8aa2e]" href="tel:+919979481734">+91 99794 81734</a>
         </div>
-        <a class="text-[10px] font-medium text-[#fff7e6]/70 transition hover:text-[#e8aa2e]" href="https://ahirhiten.github.io/" target="_blank" rel="noreferrer">Developed by Hadiya hiten vishanjibhai</a>
+        <a class="text-[10px] font-medium text-[#fff7e6]/70 transition hover:text-[#e8aa2e]" href="https://ahirhiten.github.io/" target="_blank" rel="noreferrer">Developed by Hadiya hiten vishanjibhai & Hadiya jinal vishanji bhai</a>
       </div>
     </div>
   </footer>
@@ -697,9 +697,15 @@
 
       const startMusic = async () => {
         try {
-          await music.play();
-          syncButton(true);
-        } catch {}
+          const playPromise = music.play();
+          if (playPromise !== undefined) {
+            playPromise.then(() => syncButton(true)).catch(() => {
+              // Autoplay failed, try on user interaction
+            });
+          }
+        } catch (e) {
+          console.log("Music play error:", e);
+        }
       };
 
       musicToggle.addEventListener("click", async () => {
@@ -711,17 +717,17 @@
         }
       });
 
-      document.addEventListener("click", (event) => {
+      const playOnInteraction = (event) => {
         if (event.target.closest("#musicToggle")) return;
         if (!music.paused) return;
         startMusic();
-      }, { passive: true });
+      };
 
-      document.addEventListener("touchstart", (event) => {
-        if (event.target.closest("#musicToggle")) return;
-        if (!music.paused) return;
-        startMusic();
-      }, { passive: true });
+      document.addEventListener("click", playOnInteraction, { passive: true });
+      document.addEventListener("touchstart", playOnInteraction, { passive: true });
+
+      // Try to autoplay on page load
+      setTimeout(() => startMusic(), 500);
     }
 
     function loadFonts() {
