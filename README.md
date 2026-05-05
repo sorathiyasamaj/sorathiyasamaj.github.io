@@ -1,1 +1,0 @@
-# sorathiyasamaj.github.io
